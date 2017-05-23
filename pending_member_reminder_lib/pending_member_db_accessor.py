@@ -12,6 +12,7 @@ class PendingMemberDbAccessor():
         :param db_credentials: JSON string containing db credentials
         :return: None
         """
+        self.logger = logging.getLogger(self.__class__.__name__)
 
         # Verify that we have a valid JSON document passed as db credentials
         self.db_credentials_dict = json.loads(db_credentials)
@@ -35,6 +36,8 @@ class PendingMemberDbAccessor():
             logging.error('Unable to validate database structure.  Aborting')
         return
 
+
+
     def _verify_wordpress_db_structure(self):
         """
         This function checks that the structure of the wordpress installation is as expected
@@ -57,6 +60,8 @@ class PendingMemberDbAccessor():
     def _get_list_of_local_groups(self):
         """
         Hit the db for a complete list of the local groups
+        TODO: I think this might end up being unused....
+
         :return: A list of tuples, first element of which is the term_id and the second is the name of the group
         """
         local_group_query = 'select wp_term_taxonomy.term_id, wp_terms.name '\
@@ -71,7 +76,38 @@ class PendingMemberDbAccessor():
         # Am comfortable doing this bc the number of records in the db should always be relatively low
         response = c.fetchall()
 
+        self.logger.info('%d local groups found' % len(response))
         return response
+
+    def _get_list_of_users_earlier_than_datetime(self, from_dt, role='pending-validation'):
+        """
+        Returns a list of users of a given role in the database whos accounts were created before a given datetime
+
+        Default status is 'pending-validation'
+        To see complete list of available roles:  select distinct(meta_value) from wp_usermeta where meta_key='role';
+
+        :param from_dt: Datetime object - any user of the given status from before this date time should be returned
+        :param role: String defining user role (storage format in database
+        :return: A list of user tuples (id, name, email) (or None if there were no users found meeting criteria)
+        """
+        user_query = 'select id, user_nicename, user_email from wp_users '\
+                     'where id in '\
+                     '(select user_id from wp_usermeta where meta_key="role" and meta_value="%s")' \
+                     'and user_registered<"%s"' % (role, from_dt)
+
+        self.logger.debug('User list query: %s' % user_query)
+        c = self.db_connection.cursor()
+        rowcount = c.execute(user_query)
+
+        if not rowcount:
+            self.logger.info('No users found meeting criteria: role=%d, from_dt=%s' % (role, from_dt))
+            return None
+
+        return c.fetchall()
+
+
+
+
 
 
 
