@@ -2,6 +2,7 @@ import json
 import MySQLdb
 import logging
 
+
 class PendingMemberDbAccessor():
 
     def __init__(self, db_credentials):
@@ -80,7 +81,7 @@ class PendingMemberDbAccessor():
         self.logger.info('%d local groups found' % len(response))
         return response
 
-    def _get_list_of_users_earlier_than_datetime(self, from_dt, role='pending-validation'):
+    def get_list_of_users_earlier_than_datetime(self, from_dt, role='member'):
         """
         Returns a list of users of a given role in the database whos accounts were created before a given datetime
 
@@ -104,6 +105,7 @@ class PendingMemberDbAccessor():
             self.logger.info('No users found meeting criteria: role=%s, from_dt=%s' % (role, from_dt))
             return None
 
+        self.logger.debug("%d users returned from query" % rowcount)
         return c.fetchall()
 
 
