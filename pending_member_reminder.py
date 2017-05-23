@@ -35,14 +35,13 @@ def process_input_args():
     parser.add_argument('--recipients', type=str, required=True,
                         help='Path to document on filesystem with recipients in JSON format')
 
-
     parser.add_argument('--loglevel', type=str, default='WARNING',
                         help='Logging level to use (e.g. DEBUG')
 
     return parser.parse_args()
 
 
-def slurp_file_content(path_to_file):
+def slurp_json_file_content(path_to_file):
     """
     Opens file where credentials are stored, reads file in as string, and returns it
 
@@ -60,11 +59,11 @@ if __name__ == '__main__':
     logging.basicConfig(level=args.loglevel, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     # Pull the database login info from a secure file
-    credentials_file_content = slurp_file_content(args.login_info)
+    credentials_file_content = slurp_json_file_content(args.login_info)
     db_accessor = PendingMemberDbAccessor(credentials_file_content)
 
     # Get the list of people who need to be messaged
-    email_recipients_json = slurp_file_content(args.recipients)
+    email_recipients_json = slurp_json_file_content(args.recipients)
     email_recipients = json.loads(email_recipients_json)['send-to']
     logging.debug('Recipient list: %s' % email_recipients)
 
