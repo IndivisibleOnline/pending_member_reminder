@@ -4,6 +4,7 @@ import json
 import logging
 
 from pending_member_reminder_lib.pending_member_db_accessor import PendingMemberDbAccessor
+from pending_member_reminder_lib.pending_member_email_handler import PendingMemberEmailHandler
 
 args = None
 
@@ -59,6 +60,10 @@ if __name__ == '__main__':
     # Get the list of users for whom we need to be reminded
     from_dt = datetime.datetime.today() - datetime.timedelta(days=args.num_days)
     db_accessor.get_list_of_users_earlier_than_datetime(from_dt=from_dt, role='pending-validation')
+
+    # Compose and send the email
+    mailer = PendingMemberEmailHandler()
+
 
 
 
