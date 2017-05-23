@@ -55,6 +55,7 @@ class PendingMemberDbAccessor():
             logging.error('Expected table set not found in %s' % self.database)
             return False
 
+        self.logger.debug('Wordpress database structure verified')
         return True
 
     def _get_list_of_local_groups(self):
@@ -100,7 +101,7 @@ class PendingMemberDbAccessor():
         rowcount = c.execute(user_query)
 
         if not rowcount:
-            self.logger.info('No users found meeting criteria: role=%d, from_dt=%s' % (role, from_dt))
+            self.logger.info('No users found meeting criteria: role=%s, from_dt=%s' % (role, from_dt))
             return None
 
         return c.fetchall()

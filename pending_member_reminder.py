@@ -1,4 +1,5 @@
 import argparse
+import datetime
 import logging
 
 from pending_member_reminder_lib.pending_member_db_accessor import PendingMemberDbAccessor
@@ -45,7 +46,9 @@ if __name__ == '__main__':
     credentials_file_content = slurp_db_credentials(args.login_info)
     db_accessor = PendingMemberDbAccessor(credentials_file_content)
 
-    # Get the list of groups
-    db_accessor._get_list_of_local_groups()
+    # Get the list of users for whom we need to be reminded
+    from_dt = datetime.datetime.today() - datetime.timedelta(days=args.num_days)
+    db_accessor._get_list_of_users_earlier_than_datetime(fromdt=from_dt)
 
-    # Get the list of team leaders who
+    # Get the list of people who need to be messaged
+
