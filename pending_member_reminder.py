@@ -65,15 +65,25 @@ if __name__ == '__main__':
 
     # Get the list of people who need to be messaged
     email_recipients_json = slurp_file_content(args.recipients)
-    email_recipients = json.loads(email_recipients_json)
+    email_recipients = json.loads(email_recipients_json)['send-to']
     logging.debug('Recipient list: %s' % email_recipients)
 
     # Get the list of users for whom we need to be reminded
     from_dt = datetime.datetime.today() - datetime.timedelta(days=args.num_days)
-    db_accessor.get_list_of_users_earlier_than_datetime(from_dt=from_dt, role='pending-validation')
+    pending_users_list = db_accessor.get_list_of_users_earlier_than_datetime(from_dt=from_dt, role='pending-validation')
+    if pending_users_list:
+        logging.debug('First in list of pending users is %s %s %s' % (pending_users_list[0][0],
+                                                                      pending_users_list[0][1],
+                                                                      pending_users_list[0][2]))
+    else:
+        logging.info('No users in pending_users_list - everyone is allocated')
+        exit(0)
 
     # Compose and send the email
-    mailer = PendingMemberEmailHandler()
+    mailer = PendingMemberEmailHandler(recipient_list=email_recipients, pending_user_list=pending_users_list)
+    if args.send_email:
+        logging.debug('Calling send_reminders on email handler object')
+        mailer.send_reminders(args.num_days)
 
 
 
