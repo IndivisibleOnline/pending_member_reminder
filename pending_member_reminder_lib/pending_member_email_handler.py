@@ -1,3 +1,13 @@
+"""
+
+pending_member_email_handler.py
+===========
+
+Desc     :  Manages content creation and interaction with Gmail to send the email(s) as appropriate
+
+
+"""
+
 from __future__ import print_function
 import httplib2
 import logging

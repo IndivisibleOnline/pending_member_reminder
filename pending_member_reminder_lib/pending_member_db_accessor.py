@@ -1,3 +1,14 @@
+"""
+
+pending_member_db_accessor.py
+===========
+
+Desc     :  Handles data source interaction with wordpress, to extract group and user information as necesssary
+
+
+"""
+
+
 import json
 import MySQLdb
 import logging

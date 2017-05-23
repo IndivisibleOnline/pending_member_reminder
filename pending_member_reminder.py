@@ -1,3 +1,14 @@
+"""
+
+pending_member_reminder.py
+===========
+
+Desc     :  Task to contact IW administrators when there are website members who have been waiting
+            too long for group assignment
+
+
+"""
+
 import argparse
 import datetime
 import json
