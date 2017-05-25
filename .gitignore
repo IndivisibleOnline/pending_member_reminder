@@ -2,6 +2,7 @@
 .idea
 
 simple_test.py
+mail_handler_credentials
 
 data/*
 

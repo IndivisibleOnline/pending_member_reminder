@@ -35,6 +35,9 @@ def process_input_args():
     parser.add_argument('--recipients', type=str, required=True,
                         help='Path to document on filesystem with recipients in JSON format')
 
+    parser.add_argument('--mail_credentials', type=str, required=True,
+                        help='Path to document on filesystem with information for mail connection')
+
     parser.add_argument('--loglevel', type=str, default='WARNING',
                         help='Logging level to use (e.g. DEBUG')
 
@@ -63,9 +66,14 @@ if __name__ == '__main__':
     db_accessor = PendingMemberDbAccessor(credentials_file_content)
 
     # Get the list of people who need to be messaged
+    # TODO:  Should this change to a wordpress datasource query, for a list of Admins on the site?
     email_recipients_json = slurp_json_file_content(args.recipients)
     email_recipients = json.loads(email_recipients_json)['send-to']
     logging.debug('Recipient list: %s' % email_recipients)
+
+    mail_credentials_json = slurp_json_file_content(args.mail_credentials)
+    mail_credentials = json.loads(mail_credentials_json)
+
 
     # Get the list of users for whom we need to be reminded
     from_dt = datetime.datetime.today() - datetime.timedelta(days=args.num_days)
@@ -79,7 +87,9 @@ if __name__ == '__main__':
         exit(0)
 
     # Compose and send the email
-    mailer = PendingMemberEmailHandler(recipient_list=email_recipients, pending_user_list=pending_users_list)
+    mailer = PendingMemberEmailHandler(recipient_list=email_recipients,
+                                       pending_user_list=pending_users_list,
+                                       mail_credentials=mail_credentials)
     if args.send_email:
         logging.debug('Calling send_reminders on email handler object')
         mailer.send_reminders(args.num_days)
