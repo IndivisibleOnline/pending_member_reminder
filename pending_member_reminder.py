@@ -14,6 +14,10 @@ import datetime
 import json
 import logging
 
+# This is required to help construct the argument list, so we can pass args to the gmail sending apis
+from oauth2client import tools
+
+
 from pending_member_reminder_lib.pending_member_db_accessor import PendingMemberDbAccessor
 from pending_member_reminder_lib.pending_member_email_handler import PendingMemberEmailHandler
 
@@ -21,12 +25,13 @@ args = None
 
 
 def process_input_args():
-    parser = argparse.ArgumentParser(description='System to identify group leaders who need to follow up with member acceptances')
+    parser = argparse.ArgumentParser(parents=[tools.argparser],
+                                     description='System to identify group leaders who need to follow up with member acceptances')
 
     parser.add_argument('--num_days', type=int, default=3,
                         help='Number of days before alerts should be sent')
 
-    parser.add_argument('--send_email', '-e', action='store_true',
+    parser.add_argument('--send_email', '-e', action='store_true', default=False,
                         help='If present, will actual send emails to the intended recipients')
 
     parser.add_argument('--login_info', type=str, required=True,
@@ -37,9 +42,6 @@ def process_input_args():
 
     parser.add_argument('--mail_credentials', type=str, required=True,
                         help='Path to document on filesystem with information for mail connection')
-
-    parser.add_argument('--loglevel', type=str, default='WARNING',
-                        help='Logging level to use (e.g. DEBUG')
 
     return parser.parse_args()
 
@@ -59,7 +61,7 @@ def slurp_json_file_content(path_to_file):
 
 if __name__ == '__main__':
     args = process_input_args()
-    logging.basicConfig(level=args.loglevel, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    logging.basicConfig(level=args.logging_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     # Pull the database login info from a secure file
     credentials_file_content = slurp_json_file_content(args.login_info)
@@ -89,10 +91,12 @@ if __name__ == '__main__':
     # Compose and send the email
     mailer = PendingMemberEmailHandler(recipient_list=email_recipients,
                                        pending_user_list=pending_users_list,
-                                       mail_credentials=mail_credentials)
+                                       mail_credentials=mail_credentials, input_args=args)
     if args.send_email:
         logging.debug('Calling send_reminders on email handler object')
         mailer.send_reminders(args.num_days)
+    else:
+        logging.info('Actually sending emails requires --send_email flag. Aborting')
 
 
 
